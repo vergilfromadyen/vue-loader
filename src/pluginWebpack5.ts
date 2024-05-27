@@ -3,7 +3,7 @@ import type { VueLoaderOptions } from './'
 import type { RuleSetRule, Compiler, RuleSetUse } from 'webpack'
 import { needHMR } from './util'
 import { clientCache, typeDepToSFCMap } from './resolveScript'
-import { compiler as vueCompiler } from './compiler'
+import { getCompiler as getVueCompiler, setCompiler as setVueCompiler } from './compiler'
 import { descriptorCache } from './descriptorCache'
 
 const id = 'vue-loader-plugin'
@@ -171,6 +171,8 @@ class VueLoaderPlugin {
     const vueLoaderUse = vueUse[vueLoaderUseIndex]
     const vueLoaderOptions = (vueLoaderUse.options =
       vueLoaderUse.options || {}) as VueLoaderOptions
+
+    if (vueLoaderOptions.compiler) setVueCompiler(vueLoaderOptions.compiler as string);
     const enableInlineMatchResource =
       vueLoaderOptions.experimentalInlineMatchResource
 
@@ -275,7 +277,7 @@ class VueLoaderPlugin {
     // 3.3 HMR support for imported types
     if (
       needHMR(vueLoaderOptions, compiler.options) &&
-      vueCompiler.invalidateTypeCache
+      getVueCompiler().invalidateTypeCache
     ) {
       compiler.hooks.afterCompile.tap(id, (compilation) => {
         if (compilation.compiler === compiler) {
@@ -287,7 +289,7 @@ class VueLoaderPlugin {
       compiler.hooks.watchRun.tap(id, () => {
         if (!compiler.modifiedFiles) return
         for (const file of compiler.modifiedFiles) {
-          vueCompiler.invalidateTypeCache(file)
+          getVueCompiler().invalidateTypeCache(file)
           const affectedSFCs = typeDepToSFCMap.get(file)
           if (affectedSFCs) {
             for (const sfc of affectedSFCs) {
@@ -304,7 +306,7 @@ class VueLoaderPlugin {
           }
         }
         for (const file of compiler.removedFiles!) {
-          vueCompiler.invalidateTypeCache(file)
+          getVueCompiler().invalidateTypeCache(file)
         }
       })
     }

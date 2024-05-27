@@ -3,7 +3,7 @@ import * as path from 'path'
 import * as crypto from 'crypto'
 import * as qs from 'querystring'
 
-import { compiler } from './compiler'
+import { getCompiler, setCompiler } from './compiler'
 import type {
   TemplateCompiler,
   CompilerOptions,
@@ -62,7 +62,6 @@ export interface VueLoaderOptions {
 
 let errorEmitted = false
 
-const { parse } = compiler
 const exportHelperPath = require.resolve('./exportHelper')
 
 function hash(text: string): string {
@@ -74,6 +73,7 @@ export default function loader(
   source: string
 ) {
   const loaderContext = this
+  setCompiler(getOptions(loaderContext)?.compiler)
 
   // check if plugin is installed
   if (
@@ -115,8 +115,7 @@ export default function loader(
     mode === 'production' || process.env.NODE_ENV === 'production'
 
   const filename = resourcePath.replace(/\?.*$/, '')
-
-  const { descriptor, errors } = parse(source, {
+  const { descriptor, errors } = getCompiler().parse(source, {
     filename,
     sourceMap,
     templateParseOptions: options.compilerOptions,

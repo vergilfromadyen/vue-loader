@@ -1,8 +1,6 @@
 import * as qs from 'querystring'
 import type { LoaderDefinitionFunction } from 'webpack'
-import { compiler } from './compiler'
-
-const { compileStyle } = compiler
+import { getCompiler } from './compiler'
 
 // This is a post loader that handles scoped CSS transforms.
 // Injected right before css-loader by the global pitcher (../pitch.js)
@@ -16,7 +14,7 @@ const StylePostLoader: LoaderDefinitionFunction = function (source, inMap) {
     return
   }
 
-  const { code, map, errors } = compileStyle({
+  const { code, map, errors } = getCompiler().compileStyle({
     source: source as string,
     filename: this.resourcePath,
     id: `data-v-${query.id}`,

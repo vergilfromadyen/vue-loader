@@ -6,9 +6,8 @@ import type {
 } from 'vue/compiler-sfc'
 import type { VueLoaderOptions } from 'src'
 import { resolveTemplateTSOptions } from './util'
-import { compiler } from './compiler'
+import { getCompiler } from './compiler'
 
-const { compileScript } = compiler
 export const clientCache = new WeakMap<SFCDescriptor, SFCScriptBlock | null>()
 const serverCache = new WeakMap<SFCDescriptor, SFCScriptBlock | null>()
 
@@ -57,7 +56,7 @@ export function resolveScript(
   }
 
   try {
-    resolved = compileScript(descriptor, {
+    resolved = getCompiler().compileScript(descriptor, {
       id: scopeId,
       isProd,
       inlineTemplate: enableInline,

@@ -3,7 +3,7 @@ import type { Compiler, RuleSetRule } from 'webpack'
 import type { VueLoaderOptions } from './'
 import { clientCache, typeDepToSFCMap } from './resolveScript'
 import fs = require('fs')
-import { compiler as vueCompiler } from './compiler'
+import { getCompiler as getVueCompiler } from './compiler'
 import { descriptorCache } from './descriptorCache'
 import { needHMR } from './util'
 
@@ -124,7 +124,7 @@ class VueLoaderPlugin {
     // 3.3 HMR support for imported types
     if (
       needHMR(vueLoaderOptions, compiler.options) &&
-      vueCompiler.invalidateTypeCache
+      getVueCompiler().invalidateTypeCache
     ) {
       let watcher: any
 
@@ -143,7 +143,7 @@ class VueLoaderPlugin {
             (changes: Set<string>, removals: Set<string>) => {
               for (const file of changes) {
                 // bust compiler-sfc type dep cache
-                vueCompiler.invalidateTypeCache(file)
+                getVueCompiler().invalidateTypeCache(file)
                 const affectedSFCs = typeDepToSFCMap.get(file)
                 if (affectedSFCs) {
                   for (const sfc of affectedSFCs) {
@@ -156,7 +156,7 @@ class VueLoaderPlugin {
                 }
               }
               for (const file of removals) {
-                vueCompiler.invalidateTypeCache(file)
+                getVueCompiler().invalidateTypeCache(file)
               }
             }
           )

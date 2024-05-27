@@ -2,13 +2,10 @@ import type { LoaderDefinitionFunction } from 'webpack'
 import * as qs from 'querystring'
 import { VueLoaderOptions } from './'
 import { formatError } from './formatError'
-import type { TemplateCompiler } from 'vue/compiler-sfc'
 import { getDescriptor } from './descriptorCache'
 import { resolveScript } from './resolveScript'
 import { getOptions, resolveTemplateTSOptions } from './util'
-import { compiler } from './compiler'
-
-const { compileTemplate } = compiler
+import { getCompiler } from './compiler'
 
 // Loader that compiles raw template into JavaScript functions.
 // This is injected by the global pitcher (../pitch) for template
@@ -38,14 +35,8 @@ const TemplateLoader: LoaderDefinitionFunction = function (source, inMap: any) {
     loaderContext
   )
 
-  let templateCompiler: TemplateCompiler | undefined
-  if (typeof options.compiler === 'string') {
-    templateCompiler = require(options.compiler)
-  } else {
-    templateCompiler = options.compiler
-  }
 
-  const compiled = compileTemplate({
+  const compiled = getCompiler().compileTemplate({
     source,
     ast:
       descriptor.template && !descriptor.template.lang
@@ -59,7 +50,6 @@ const TemplateLoader: LoaderDefinitionFunction = function (source, inMap: any) {
     isProd,
     ssr: isServer,
     ssrCssVars: descriptor.cssVars,
-    compiler: templateCompiler,
     compilerOptions: {
       ...options.compilerOptions,
       scopeId: query.scoped ? `data-v-${scopeId}` : undefined,
